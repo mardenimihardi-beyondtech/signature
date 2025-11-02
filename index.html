@@ -17,13 +17,19 @@
     }
 
     .container {
-      background: #f3f4f6;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb; /* 👈 border lembut abu muda */
       border-radius: 14px;
       padding: 40px 32px;
-      box-shadow: 0 5px 12px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
       text-align: center;
       width: 100%;
       max-width: 420px;
+      transition: box-shadow 0.3s ease;
+    }
+
+    .container:hover {
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
     }
 
     h1 {
@@ -62,6 +68,7 @@
     .login {
       background-color: #e0e7ff;
       color: #1e3a8a;
+      border: 1px solid #c7d2fe;
     }
 
     .login:hover {
@@ -72,6 +79,7 @@
     .generate {
       background-color: #dcfce7;
       color: #166534;
+      border: 1px solid #bbf7d0;
     }
 
     .generate:hover {
