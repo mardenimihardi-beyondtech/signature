@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Signature Tools</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background: #f3f4f6;
+      border-radius: 14px;
+      padding: 40px 32px;
+      box-shadow: 0 5px 12px rgba(0, 0, 0, 0.05);
+      text-align: center;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 8px;
+    }
+
+    p {
+      color: #6b7280;
+      font-size: 14px;
+      margin-bottom: 28px;
+    }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 10px 0;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 14px;
+    }
+
+    .btn i {
+      font-size: 14px;
+    }
+
+    .login {
+      background-color: #e0e7ff;
+      color: #1e3a8a;
+    }
+
+    .login:hover {
+      background-color: #c7d2fe;
+      transform: translateY(-2px);
+    }
+
+    .generate {
+      background-color: #dcfce7;
+      color: #166534;
+    }
+
+    .generate:hover {
+      background-color: #bbf7d0;
+      transform: translateY(-2px);
+    }
+
+    footer {
+      margin-top: 16px;
+      font-size: 12px;
+      color: #9ca3af;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1><i class="fa-solid fa-shield-halved"></i> Signature Tools</h1>
+    <p>Pilih jenis generator yang ingin digunakan</p>
+
+    <button class="btn login" onclick="location.href='signature-login.html'">
+      <i class="fa-solid fa-user-lock"></i> Signature Login
+    </button>
+
+    <button class="btn generate" onclick="location.href='signature-general.html'">
+      <i class="fa-solid fa-file-signature"></i> Signature Generator
+    </button>
+
+    <footer>© 2025 mardenimihardi@gmail.com</footer>
+  </div>
+</body>
+</html>

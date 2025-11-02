@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HMAC Signature Generator</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+      width: 100%;
+      max-width: 560px;
+      transition: all 0.3s ease;
+    }
+
+    h2 {
+      text-align: center;
+      color: #111827;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    h2 i {
+      color: #3b82f6;
+      font-size: 1.1rem;
+    }
+
+    label {
+      font-weight: 600;
+      color: #374151;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 13px;
+    }
+
+    label i {
+      color: #3b82f6;
+      font-size: 0.9rem;
+    }
+
+    input, textarea, select, button {
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    input, textarea, select {
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 13px;
+      transition: border-color 0.3s ease;
+      margin-bottom: 10px;
+      background: #fff;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: #3b82f6;
+      outline: none;
+    }
+
+    select {
+      cursor: pointer;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 0;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      margin-top: 6px;
+    }
+
+    button i {
+      font-size: 13px;
+    }
+
+    button:hover {
+      background-color: #2563eb;
+    }
+
+    .copy {
+      background-color: #e0e7ff;
+      color: #1e3a8a;
+    }
+
+    .copy:hover {
+      background-color: #c7d2fe;
+    }
+
+    .download {
+      background-color: #dcfce7;
+      color: #166534;
+    }
+
+    .download:hover {
+      background-color: #bbf7d0;
+    }
+
+    pre {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      padding: 8px;
+      font-size: 12px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-x: auto;
+      min-height: 100px;
+      box-sizing: border-box;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .button-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2><i class="fa-solid fa-shield-halved"></i> HMAC Signature Generator</h2>
+
+    <label for="method"><i class="fa-solid fa-code"></i> HTTP Method</label>
+    <select id="method">
+      <option value="" disabled selected>Pilih method</option>
+      <option value="GET">GET</option>
+      <option value="POST">POST</option>
+      <option value="PUT">PUT</option>
+      <option value="PATCH">PATCH</option>
+      <option value="DELETE">DELETE</option>
+    </select>
+
+    <label for="uri"><i class="fa-solid fa-globe"></i> Request URI</label>
+    <input id="uri" placeholder="/v1.0/endpoint" />
+
+    <label for="accessToken"><i class="fa-solid fa-key"></i> Access Token</label>
+    <input id="accessToken" placeholder="Masukkan access token" />
+
+    <label for="secretKey"><i class="fa-solid fa-lock"></i> Secret Key</label>
+    <input id="secretKey" placeholder="Masukkan secret key" />
+
+    <label for="timestamp"><i class="fa-solid fa-clock"></i> Timestamp (ISO)</label>
+    <input id="timestamp" placeholder="2025-10-09T23:54:30+07:00" />
+
+    <label for="body"><i class="fa-solid fa-file-code"></i> Request Body (JSON)</label>
+    <textarea id="body" placeholder='{"example":"value"}'></textarea>
+
+    <div class="button-group">
+      <button onclick="generateSignature()"><i class="fa-solid fa-lock"></i> Generate Signature</button>
+      <button class="copy" onclick="copySignature()"><i class="fa-regular fa-copy"></i> Copy Signature</button>
+      <button class="download" onclick="downloadSignature()"><i class="fa-solid fa-download"></i> Download Signature</button>
+    </div>
+
+    <pre id="result">(signature will appear here)</pre>
+  </div>
+
+  <script>
+    function generateSignature() {
+      const method = document.getElementById('method').value.trim().toUpperCase();
+      const uri = document.getElementById('uri').value.trim();
+      const accessToken = document.getElementById('accessToken').value.trim();
+      const secretKey = document.getElementById('secretKey').value.trim();
+      const timestamp = document.getElementById('timestamp').value.trim();
+      const body = document.getElementById('body').value.trim();
+
+      if (!method || !uri || !accessToken || !secretKey || !timestamp) {
+        document.getElementById('result').textContent = '❌ Semua field wajib diisi!';
+        return;
+      }
+
+      let jsonHash = '';
+      try {
+        if (body) {
+          const compacted = JSON.stringify(JSON.parse(body));
+          jsonHash = CryptoJS.SHA256(compacted).toString(CryptoJS.enc.Hex).toLowerCase();
+        }
+      } catch (err) {
+        document.getElementById('result').textContent = '⚠️ JSON tidak valid di body';
+        return;
+      }
+
+      const stringToSign = `${method}:${uri}:${accessToken}:${jsonHash}:${timestamp}`;
+
+      console.log(stringToSign);
+
+      const hmac = CryptoJS.HmacSHA512(stringToSign, secretKey);
+      const signature = CryptoJS.enc.Base64.stringify(hmac);
+
+      document.getElementById('result').textContent = signature;
+    }
+
+    function copySignature() {
+      const signature = document.getElementById('result').textContent;
+      navigator.clipboard.writeText(signature);
+      alert('✅ Signature berhasil disalin!');
+    }
+
+    function downloadSignature() {
+      const signature = document.getElementById('result').textContent;
+      const blob = new Blob([signature], { type: 'text/plain' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'signature.txt';
+      link.click();
+    }
+  </script>
+</body>
+</html>
