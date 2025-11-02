@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Auth Signature Generator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --card: #f8fafc;
+      --muted: #64748b;
+      --accent: #3b82f6;
+      --border: #e2e8f0;
+      --text: #0f172a;
+    }
+    * {
+      box-sizing: border-box;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial;
+    }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+    }
+    .wrap {
+      width: 100%;
+      max-width: 920px;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+    .logo {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), #6366f1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: white;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    h1 {
+      margin: 0;
+      font-size: 22px;
+      color: var(--text);
+    }
+    p.lead {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .card {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--border);
+    }
+    form.grid {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 18px;
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    input[type=text], textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: white;
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+    }
+    textarea {
+      height: 160px; /* fixed height */
+      resize: none; /* prevent resizing */
+      overflow-y: auto; /* scroll instead of expand */
+    }
+    pre {
+      background: #f1f5f9;
+      padding: 12px;
+      border-radius: 8px;
+      overflow: auto;
+      color: var(--text);
+      max-height: 160px; /* fixed height */
+      white-space: pre-wrap; /* wrap long lines */
+      word-wrap: break-word;
+    }
+    .controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    button {
+      background: var(--accent);
+      color: white;
+      border: 0;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #2563eb;
+    }
+    button.ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .meta {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .hint {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .footer {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    @media (max-width: 880px) {
+      form.grid {
+        grid-template-columns: 1fr;
+      }
+      .meta {
+        order: 2;
+      }
+    }
+
+    textarea {
+  width: 100%;              /* Lebar konsisten mengikuti container */
+  max-width: 600px;         /* Atur batas maksimum agar tidak melebar terlalu besar */
+  resize: vertical;         /* Hanya boleh di-resize vertikal, bukan horizontal */
+  overflow-x: hidden;       /* Hilangkan scroll horizontal */
+  white-space: pre-wrap;    /* Bungkus teks agar tidak bikin scroll horizontal */
+  word-wrap: break-word;    /* Pecah kata panjang */
+  font-family: monospace;   /* Tetap rapi untuk key panjang */
+}
+
+#result {
+  width: 100%;              /* Konsisten dengan container */
+  max-width: 500px;         /* Batas lebar */
+  min-height: 120px;        /* Tinggi tetap agar stabil */
+  overflow-x: auto;         /* Tambah scroll horizontal jika teks terlalu panjang */
+  overflow-y: auto;         /* Scroll vertikal jika banyak baris */
+  background: #f9f9f9;      /* Warna lembut agar kontras di background putih */
+  border: 1px solid #ccc;   /* Biar jelas area hasilnya */
+  border-radius: 6px;
+  padding: 12px;
+  font-family: monospace;   /* Biar karakter base64 sejajar */
+  word-wrap: break-word;    /* Pecah baris panjang */
+  white-space: pre-wrap;    /* Bungkus baris otomatis */
+  box-sizing: border-box;
+}
+
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo">AS</div>
+      <div>
+        <h1>Auth Signature Generator</h1>
+        <p class="lead">Masukkan private key, partner/client key, dan timestamp lalu tekan <strong>Generate</strong>.</p>
+      </div>
+    </header>
+
+    <div class="card">
+      <form id="form" class="grid" onsubmit="return false">
+        <div>
+          <label for="privateKey">Private Key (PEM tanpa header atau lengkap)</label>
+          <textarea id="privateKey" placeholder="Masukkan private key">-----BEGIN PRIVATE KEY-----\nMIIBVwIBADANBgkq...example...\n-----END PRIVATE KEY-----</textarea>
+
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <div style="flex:1">
+              <label for="partnerId">Partner / Client Key</label>
+              <input id="partnerId" type="text" placeholder="contoh: example-client-key" value="example clientkey">
+            </div>
+            <div style="width:200px">
+              <label for="timestamp">Timestamp</label>
+              <input id="timestamp" type="text" placeholder="ISO 8601" value="2025-06-23T11:32:02+07:00">
+            </div>
+          </div>
+
+          <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+            <div class="controls">
+              <button id="generate">Generate</button>
+              <button id="clear" class="ghost">Clear</button>
+            </div>
+            <div style="margin-left:auto" class="hint">Signature algorithm: SHA-256, RSA (PKCS#1 v1.5)</div>
+          </div>
+
+          <div style="margin-top:12px">
+            <label>Result</label>
+            <pre id="result">(signature will appear here)</pre>
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <button id="copy" class="ghost">Copy</button>
+              <button id="download" class="ghost">Download .txt</button>
+            </div>
+          </div>
+        </div>
+
+        <aside class="meta">
+          <div>
+            <label>How it works</label>
+            <p class="hint">String to sign = <code>partnerId|timestamp</code>. Jika private key tidak memiliki header/footer, aplikasi akan menambahkannya otomatis. Menggunakan <code>node-forge</code> (built for browser) untuk memproses kunci dan membuat signature, lalu di-encode ke Base64.</p>
+          </div>
+
+          <div>
+            <label>Tips & Troubleshooting</label>
+            <ul class="hint">
+              <li>Pastikan private key cocok (RSA private key, PKCS#8). Jika masih error, coba gunakan private key full PEM.</li>
+              <li>Timestamp gunakan format ISO 8601 lengkap dengan zona waktu.</li>
+              <li>Jika hasil berbeda dari server, pastikan algoritma signing yang diharapkan adalah SHA-256 + PKCS#1 v1.5.</li>
+            </ul>
+          </div>
+
+          <div>
+            <label>Example</label>
+            <pre>String: example clientkey|2025-06-23T11:32:02+07:00\nSignature: (base64)</pre>
+          </div>
+
+          <div class="footer">mardenimihardi@gmail.com</div>
+        </aside>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/forge/0.10.0/forge.min.js"></script>
+  <script>
+    function normalizePrivateKey(pem) {
+      const trimmed = pem.trim();
+      if (/-----BEGIN [^-]+-----/.test(trimmed) && /-----END [^-]+-----/.test(trimmed)) {
+        return trimmed.replace(/\r\n/g, '\n');
+      }
+      const body = trimmed.replace(/\s+/g, '\n');
+      return '-----BEGIN PRIVATE KEY-----\n' + body + '\n-----END PRIVATE KEY-----';
+    }
+
+    function authSignature(privateKey, partnerId, timestamp) {
+      const stringToSign = partnerId + '|' + timestamp;
+      const formatted = normalizePrivateKey(privateKey);
+
+      let privateKeyObj;
+      try {
+        privateKeyObj = forge.pki.privateKeyFromPem(formatted);
+      } catch (err) {
+        throw new Error('Invalid private key: ' + err.message);
+      }
+
+      const md = forge.md.sha256.create();
+      md.update(stringToSign, 'utf8');
+
+      try {
+        const signature = privateKeyObj.sign(md);
+        return forge.util.encode64(signature);
+      } catch (err) {
+        throw new Error('Signing failed: ' + err.message);
+      }
+    }
+
+    const $ = id => document.getElementById(id);
+
+    $('generate').addEventListener('click', () => {
+      const pk = $('privateKey').value;
+      const partner = $('partnerId').value.trim();
+      const ts = $('timestamp').value.trim();
+      try {
+        if (!pk) throw new Error('Private key kosong');
+        if (!partner) throw new Error('Partner/client key kosong');
+        if (!ts) throw new Error('Timestamp kosong');
+        const sig = authSignature(pk, partner, ts);
+        $('result').textContent = sig;
+      } catch (err) {
+        $('result').textContent = 'ERROR: ' + err.message;
+      }
+    });
+
+    $('clear').addEventListener('click', (e) => {
+      e.preventDefault();
+      $('privateKey').value = '';
+      $('partnerId').value = '';
+      $('timestamp').value = '';
+      $('result').textContent = '(signature will appear here)';
+    });
+
+    $('copy').addEventListener('click', () => {
+      const txt = $('result').textContent;
+      if (!txt || txt.startsWith('ERROR')) return;
+      navigator.clipboard.writeText(txt).then(() => {
+        alert('Copied to clipboard');
+      }).catch(() => {
+        alert('Gagal copy — browser tidak mengizinkan');
+      });
+    });
+
+    $('download').addEventListener('click', () => {
+      const txt = $('result').textContent;
+      if (!txt || txt.startsWith('ERROR')) return;
+      const blob = new Blob([txt], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'signature.txt';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    });
+  </script>
+</body>
+</html>
